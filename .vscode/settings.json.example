@@ -1,0 +1,16 @@
+{
+    // ===== 改行コード =====
+    "files.eol": "\n", // 新規ファイルはLF
+    "files.autoGuessEncoding": true, // エンコーディング自動検出
+    // ===== WSL統合 =====
+    "terminal.integrated.defaultProfile.windows": "WSL",
+    "terminal.integrated.profiles.windows": {
+        "WSL": {
+            "path": "wsl.exe",
+            "args": [
+                "-d",
+                "Ubuntu"
+            ]
+        }
+    }
+}

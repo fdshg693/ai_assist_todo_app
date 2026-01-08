@@ -1,0 +1,23 @@
+# デフォルト：テキストファイルはLFに正規化
+* text=auto eol=lf
+
+# 明示的にテキストとして扱う
+*.py text eol=lf
+*.js text eol=lf
+*.ts text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Windows固有のファイル（CRLFを維持）
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# バイナリファイル（変換禁止）
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff2 binary
+*.ttf binary
