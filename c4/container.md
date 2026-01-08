@@ -5,21 +5,21 @@
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                                                                     │
-│                          エンドユーザー                               │
-│                                                                     │
-└───────────┬─────────────────────────────────────────────┬───────────┘
-            │                                             │
-            │ HTTPS                                       │
-            │ (Webブラウザ)                                │
-            │                                             │
-┌───────────▼──────────────┐                 ┌────────────▼────────────┐
+│                          エンドユーザー                              │
+│                                                                    │
+└───────────┬────────────────────────────────────────────────────────┘
+            │                                             
+            │ HTTPS                                       
+            │ (Webブラウザ)                               
+            │                                             
+┌───────────▼──────────────┐                 ┌────────────────────────┐
 │                          │                 │                         │
 │   Frontend Container     │                 │   Backend Container     │
 │                          │                 │                         │
 │  ┌────────────────────┐  │   REST API      │  ┌──────────────────┐   │
 │  │  React App         │  │   (HTTPS/JSON)  │  │  ASP.NET Core    │   │
 │  │  TypeScript        │◄─┼─────────────────┼─►│  Web API         │   │
-│  │                    │  │                 │  │  C# + EF Core    │   │
+│  │                    │  │                 │  │  C# + Dapper     │   │
 │  │  - UI Components   │  │                 │  │                  │   │
 │  │  - State Mgmt      │  │                 │  │  - Controllers   │   │
 │  │  - API Client      │  │                 │  │  - Services      │   │
@@ -55,7 +55,7 @@
 ## コンテナ詳細
 
 ### Frontend Container
-- **技術**: React 18+, TypeScript 5+
+- **技術**: React 18+, TypeScript 5+（最新安定版にする）
 - **責務**: ユーザーインターフェース
 - **主要コンポーネント**:
   - Todo一覧・作成・編集UI
@@ -64,9 +64,12 @@
   - 状態管理 (Context API / Redux Toolkit)
 - **デプロイ**: 静的ホスティング or コンテナ
 - **ポート**: 3000
+- **ライブラリ**:
+  - Chakra UI v2
+  - Zustand
 
 ### Backend Container
-- **技術**: .NET Core 8+, ASP.NET Core Web API
+- **技術**: .NET Core 10, ASP.NET Core Web API, Dapper
 - **責務**: ビジネスロジックとAPIエンドポイント
 - **アーキテクチャ**:
   - Presentation Layer (Controllers)
@@ -76,9 +79,23 @@
 - **主要機能**:
   - Todo CRUD API
   - AI統合サービス (Microsoft Agent Framework)
-  - 認証・認可
+  - 認証・認可 (一旦放置)
 - **デプロイ**: Dockerコンテナ
 - **ポート**: 5000
+- **ライブラリ**:
+  - Dapper
+  - Serilog
+  - FluentValidation
+  - MediatR
+  - Polly
+  - Swashbuckle (Swagger)
+- **マイクロサービス**
+  - GRPCを使ったサービス間通信は、可能なら取り入れたい
+  - MagicOnionを使えば比較的簡単に導入できる
+
+### API連携
+- バックエンド・フロントエンドで上手く合わせる
+  - openapi/swaggerでAPI仕様を共有はしたい（YAMLからコード生成までは一旦不要） 
 
 ### Database Container
 - **技術**: PostgreSQL
@@ -87,7 +104,7 @@
   - Todos (タスク情報)
   - Users (ユーザー情報)
   - その他マスタデータ
-- **マイグレーション**: Entity Framework Core Migrations
+- **マイグレーション**: Dapperではマイグレーション機能なし（別途ツール使用検討）
 - **ローカル環境**: Docker Compose
 - **本番環境**: Azure Database for PostgreSQL / AWS RDS
 - **ポート**: 5432
