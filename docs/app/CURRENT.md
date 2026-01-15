@@ -56,26 +56,60 @@
 
 - **コンポーネント**
   - `App.tsx` - アプリケーションのルートコンポーネント
-    - シンプルなレイアウト (グレー背景、パディング)
-    - TodoListコンポーネントをマウント
+    - LayoutとDashboardを組み合わせた構成
+
+  - `Layout.tsx` (frontend/src/components/Layout.tsx)
+    - アプリケーション全体のレイアウト
+    - ヘッダー (AI Todo App)
+    - グレー背景、コンテナでラップ
+
+  - `Dashboard.tsx` (frontend/src/components/Dashboard.tsx)
+    - グリッドレイアウト (12カラム)
+    - TodoListをメインエリアに配置
+    - サイドバーエリア (将来のAI機能用)
 
   - `TodoList.tsx` (frontend/src/components/TodoList.tsx)
-    - Todo一覧表示
+    - Todo一覧コンテナ
+    - Zustandストアと統合
+    - ローディング状態、エラー表示
+    - TodoInputとTodoItemを組み合わせ
+
+  - `TodoItem.tsx` (frontend/src/components/TodoItem.tsx)
+    - 個別Todoアイテムの表示
+    - Chakra UI Checkboxコンポーネント使用
+    - 削除ボタン (Lucide React アイコン)
+    - ホバーエフェクト、完了時のスタイル変更
+
+  - `TodoInput.tsx` (frontend/src/components/TodoInput.tsx)
     - Todo追加フォーム
-    - Todoのチェックボックス (完了/未完了切り替え)
-    - Todo削除ボタン
-    - ローディング状態表示
-    - エラーハンドリングとエラーメッセージ表示
+    - 入力欄とボタン
+    - Enterキー対応、ローディング状態
+
+  - `EmptyState.tsx` (frontend/src/components/EmptyState.tsx)
+    - Todo 0件時の表示
+    - アイコンとメッセージ
+
+- **状態管理**
+  - `todoStore.ts` (frontend/src/store/todoStore.ts)
+    - Zustandによるグローバルステート管理
+    - todos配列、loading、errorステート
+    - 同期アクション (setTodos, addTodo, updateTodo, deleteTodo)
+    - 非同期アクション (fetchTodos, createTodo, toggleTodo, removeTodo)
 
 - **API通信**
-  - fetch APIを使用したREST API呼び出し
+  - Zustandストア内でfetch APIを使用
   - バックエンドURL: `http://localhost:5120/api/todos`
   - GET (全取得), POST (作成), PUT (更新), DELETE (削除) の実装
+  - エラーハンドリングをストアで一元管理
 
 - **UI機能**
-  - インラインスタイルによる基本的なスタイリング
-  - 完了したTodoに取り消し線を表示
-  - Todoが0件の場合のプレースホルダー表示
+  - Chakra UI v3によるモダンなスタイリング
+  - レスポンシブデザイン (モバイル、タブレット、デスクトップ対応)
+  - Framer Motionによるアニメーション (Todo追加/削除時)
+  - 完了したTodoに取り消し線とグレーアウト
+  - Todoが0件の場合のEmptyState表示
+  - ローディングスピナー
+  - エラーメッセージの視覚的表示
   - リアルタイムなUI更新
 
 ### 現在の技術スタック
@@ -87,8 +121,11 @@
 - **言語**: TypeScript 5.9.3
 - **ビルドツール**: Vite 7.2.4
 - **開発ツール**: ESLint 9.39.1
-- **状態管理**: React useState (ローカルステート)
-- **UIライブラリ**: なし (インラインスタイルのみ)
+- **状態管理**: Zustand 5.0.10
+- **UIライブラリ**: Chakra UI 3.31.0
+- **アイコン**: Lucide React 0.562.0
+- **アニメーション**: Framer Motion 12.26.2
+- **スタイリング**: Emotion 11.14.0 (Chakra UI依存)
 
 #### バックエンド
 - **ランタイム**: .NET 10.0.101
@@ -111,8 +148,6 @@
 - Azure OpenAI Service連携
 - 認証・認可機能
 - ユーザー管理
-- UIライブラリ (Chakra UI等)
-- 状態管理ライブラリ (Zustand等)
 - ロギング (Serilog)
 - バリデーション (FluentValidation)
 - CQRS (MediatR)
@@ -123,10 +158,12 @@
 ### アーキテクチャの現状
 
 #### 現在の構成
-- **フロントエンド**: シンプルなReactアプリケーション
-  - 単一コンポーネント構成 (App → TodoList)
-  - ローカルステート管理
-  - 直接fetch APIでバックエンドと通信
+- **フロントエンド**: モダンなReactアプリケーション
+  - コンポーネント分割構成 (App → Layout → Dashboard → TodoList → TodoItem/TodoInput)
+  - Zustandによるグローバルステート管理
+  - Chakra UI v3によるUIコンポーネント
+  - Zustandストア経由でバックエンドと通信
+  - アニメーション、レスポンシブデザイン対応
 
 - **バックエンド**: 最小構成のWeb API
   - Minimal API スタイル (Program.cs内でルーティング定義)
@@ -135,7 +172,11 @@
   - レイヤードアーキテクチャの基礎 (Models, Services分離)
 
 #### 将来のアーキテクチャ (計画)
-- フロントエンド: 状態管理ライブラリ、UIライブラリ導入
+- フロントエンド: さらなる機能拡張
+  - ダークモード対応
+  - 多言語対応 (i18n)
+  - Todo検索・フィルタリング
+  - 詳細モーダル
 - バックエンド: 完全なレイヤードアーキテクチャ
   - Presentation Layer (Controllers)
   - Application Layer (Services)
@@ -173,21 +214,23 @@ dotnet run
 
 - データはインメモリに保存されており、アプリケーション再起動で消失
 - 認証機能がないため、誰でもアクセス可能
-- エラーハンドリングは基本的なもののみ
-- UIは最小限の機能とスタイリング
-- バックエンドのポートがドキュメント (5000) と実装 (5120) で異なる
+- エラーハンドリングは基本的なもののみ (Zustandストアで一元管理)
+- Chakra UI v3を使用 (v2のアイコンは非互換、Lucide Reactを使用)
 - データベース未接続
 - AI機能未実装
 
 ### 次のステップ候補
 
-1. PostgreSQL データベースの導入とDocker設定
-2. Dapperによるデータアクセスレイヤーの実装
-3. データベースマイグレーション設定
-4. UIライブラリ (Chakra UI) の導入
-5. 状態管理ライブラリ (Zustand) の導入
-6. Azure OpenAI Serviceの統合準備
-7. Microsoft Agent Frameworkの調査と導入
-8. 認証・認可機能の実装
-9. ロギング、バリデーション、エラーハンドリングの強化
-10. Docker Compose による開発環境の整備
+1. AI機能の実装 (Plan 2)
+   - Azure OpenAI Service統合
+   - AIレコメンド機能
+   - AIサマリ機能
+2. PostgreSQL データベースの導入とDocker設定
+3. Dapperによるデータアクセスレイヤーの実装
+4. データベースマイグレーション設定
+5. 認証・認可機能の実装
+6. ロギング、バリデーション、エラーハンドリングの強化
+7. Docker Compose による開発環境の整備
+8. UI拡張 (検索、フィルタ、ソート機能)
+9. ダークモード対応
+10. パフォーマンス最適化 (メモ化、コード分割)

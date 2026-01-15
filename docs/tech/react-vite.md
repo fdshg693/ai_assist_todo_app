@@ -22,13 +22,20 @@ React、Vite、TypeScriptを組み合わせて、モダンなフロントエン�
 ```
 frontend/
 ├── src/
-│   ├── components/       # Reactコンポーネント
-│   │   └── TodoList.tsx  # Todo一覧とCRUD操作
-│   ├── types/           # TypeScript型定義
-│   │   └── todo.ts      # Todo関連の型
-│   ├── App.tsx          # ルートコンポーネント
-│   ├── App.css          # スタイル
-│   └── main.tsx         # エントリーポイント
+│   ├── components/          # Reactコンポーネント
+│   │   ├── Dashboard.tsx    # ダッシュボードレイアウト
+│   │   ├── EmptyState.tsx   # Todo未登録時の表示
+│   │   ├── Layout.tsx       # アプリケーション全体のレイアウト
+│   │   ├── TodoInput.tsx    # Todo追加フォーム
+│   │   ├── TodoItem.tsx     # 個別のTodoアイテム
+│   │   └── TodoList.tsx     # Todo一覧コンテナ
+│   ├── store/              # 状態管理
+│   │   └── todoStore.ts    # Zustand store (グローバル状態)
+│   ├── types/              # TypeScript型定義
+│   │   └── todo.ts         # Todo関連の型
+│   ├── App.tsx             # ルートコンポーネント
+│   ├── main.tsx            # エントリーポイント (ChakraProvider)
+│   └── theme.ts            # Chakra UI テーマ設定
 ├── package.json
 └── vite.config.ts
 ```
@@ -36,29 +43,55 @@ frontend/
 ### Key Components
 
 #### App.tsx
-ルートコンポーネント。シンプルなレイアウトを提供:
+ルートコンポーネント。LayoutとDashboardを組み合わせたシンプルな構成:
 ```tsx
+import { Layout } from './components/Layout'
+import { Dashboard } from './components/Dashboard'
+
 function App() {
   return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundColor: '#f5f5f5',
-      padding: '20px'
-    }}>
-      <TodoList />
-    </div>
+    <Layout>
+      <Dashboard />
+    </Layout>
   )
 }
 ```
 
+#### Layout.tsx
+アプリケーション全体のレイアウトを提供。ヘッダーとコンテンツエリアを含む:
+- ヘッダーにアプリタイトルを表示
+- 子コンポーネントをコンテナで囲む
+- Chakra UIのBox、Container、Headingを使用
+
+#### Dashboard.tsx
+メインのダッシュボードレイアウト。Chakra UIのGridシステムを使用:
+- グリッドレイアウトでTodoListを配置
+- 将来的にAI機能エリアを追加予定
+
 #### TodoList.tsx
-Todo管理のメインコンポーネント。以下の機能を提供:
-- Todo一覧表示
-- Todo追加フォーム
-- Todo完了/未完了の切り替え
-- Todo削除
-- ローディング状態表示
-- エラーハンドリング
+Todo一覧のコンテナコンポーネント:
+- Zustand storeから状態を取得
+- ローディング・エラー状態の表示
+- TodoItem、TodoInput、EmptyStateを組み合わせ
+- Framer MotionのAnimatePresenceで要素のアニメーション管理
+
+#### TodoItem.tsx
+個別のTodoアイテムコンポーネント:
+- Chakra UIのCheckbox、IconButtonを使用
+- Framer Motionで滑らかな表示/非表示アニメーション
+- Lucide Reactアイコン (Trash2) を使用
+- Zustand storeのアクションで状態更新
+
+#### TodoInput.tsx
+Todo追加フォームコンポーネント:
+- Chakra UIのInput、Buttonを使用
+- Lucide Reactアイコン (Plus) を使用
+- Zustand storeのcreateActionで新規Todo作成
+
+#### EmptyState.tsx
+Todo未登録時の表示コンポーネント:
+- Chakra UIのCenter、Stack、Textを使用
+- Lucide Reactアイコン (CheckCircle) で視覚的なフィードバック
 
 #### Type Definitions (todo.ts)
 TypeScriptインターフェースでデータ構造を定義:
@@ -72,31 +105,91 @@ export interface Todo {
 ```
 
 ### State Management
-現在は `React.useState` を使用したローカルステート管理:
+Zustandを使用したグローバル状態管理:
 ```tsx
-const [todos, setTodos] = useState<Todo[]>([]);
-const [newTodoTitle, setNewTodoTitle] = useState('');
-const [loading, setLoading] = useState(false);
-const [error, setError] = useState<string>('');
+// todoStore.ts - Zustandストア定義
+interface TodoState {
+  todos: Todo[]
+  loading: boolean
+  error: string
+  // 同期アクション
+  setTodos: (todos: Todo[]) => void
+  addTodo: (todo: Todo) => void
+  updateTodo: (id: number, updates: Partial<Todo>) => void
+  deleteTodo: (id: number) => void
+  // 非同期アクション
+  fetchTodos: () => Promise<void>
+  createTodo: (title: string) => Promise<void>
+  toggleTodo: (id: number, isCompleted: boolean) => Promise<void>
+  removeTodo: (id: number) => Promise<void>
+}
+
+export const useTodoStore = create<TodoState>((set) => ({ ... }))
+```
+
+コンポーネントでの使用:
+```tsx
+import { useTodoStore } from '../store/todoStore'
+
+function TodoList() {
+  const { todos, loading, error, fetchTodos } = useTodoStore()
+  // ...
+}
+```
+
+### UI Library
+Chakra UI v3を使用したコンポーネントベースのUI構築:
+- **ChakraProvider**: アプリケーション全体をラップ (main.tsx)
+- **カスタムテーマ**: Noto Sans JPフォントを使用 (theme.ts)
+- **主要コンポーネント**: Box, Container, Flex, Heading, Grid, GridItem, Stack, Input, Button, Checkbox, IconButton, Text, Spinner, Center
+- **v3の新API**: `Checkbox.Root`、`Checkbox.Control`、`gap`プロップなど
+
+Chakra UI Icons v2はv3と互換性がないため、Lucide Reactを使用:
+```tsx
+import { Plus, Trash2, CheckCircle } from 'lucide-react'
+```
+
+### Animations
+Framer Motionを使用したアニメーション:
+```tsx
+import { motion, AnimatePresence } from 'framer-motion'
+
+// Chakra UIコンポーネントとの統合
+const MotionBox = motion.create(Box)
+
+<AnimatePresence>
+  {todos.map((todo) => (
+    <MotionBox
+      key={todo.id}
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, x: -100 }}
+      transition={{ duration: 0.2 }}
+    >
+      <TodoItem todo={todo} />
+    </MotionBox>
+  ))}
+</AnimatePresence>
 ```
 
 ### API Communication
-Fetch APIを使用してバックエンドと通信:
+Zustand storeでFetch APIを使用してバックエンドと通信:
 ```tsx
 const API_URL = 'http://localhost:5120/api/todos';
 
-// GET
+// fetchTodosアクション内
 const response = await fetch(API_URL);
 const data = await response.json();
+set({ todos: data, loading: false });
 
-// POST
+// createTodoアクション内
 const response = await fetch(API_URL, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ title: newTodoTitle }),
+  body: JSON.stringify({ title }),
 });
 
-// PUT, DELETE も同様
+// PUT, DELETE も同様にZustand storeアクション内で実装
 ```
 
 ## Development Notes
@@ -137,36 +230,53 @@ pnpm run preview
 
 ## Current Limitations
 
-### Styling
-- 現在はインラインスタイルのみ使用
-- UIライブラリ未導入
-- レスポンシブデザイン未対応
-
-### State Management
-- ローカルステートのみ
-- グローバル状態管理ライブラリ未使用
-
 ### Error Handling
 - 基本的なtry-catchのみ
 - エラーバウンダリ未実装
 - リトライロジック未実装
 
+### Testing
+- テストコード未実装
+- E2Eテスト未実装
+
+### Routing
+- シングルページのみ
+- React Router未導入
+
+## Recently Implemented
+
+### UI & Styling
+- ✅ Chakra UI v3導入（モダンなUIコンポーネント）
+- ✅ カスタムテーマ設定（Noto Sans JPフォント）
+- ✅ レスポンシブデザイン対応
+- ✅ Framer Motionによるアニメーション
+- ✅ Lucide Reactアイコンライブラリ
+
+### State Management
+- ✅ Zustandによるグローバル状態管理
+- ✅ 非同期アクション実装
+- ✅ エラーハンドリング統合
+
+### Component Architecture
+- ✅ コンポーネントの細分化（6つの独立したコンポーネント）
+- ✅ プレゼンテーションとロジックの分離
+- ✅ 再利用可能なコンポーネント設計
+
 ## Future Enhancements
 
 ### Planned Libraries
-- **Chakra UI**: UIコンポーネントライブラリ
-- **Zustand**: 軽量な状態管理ライブラリ
 - **React Router**: ページルーティング（必要に応じて）
-- **React Query / TanStack Query**: サーバーステート管理
+- **React Query / TanStack Query**: サーバーステート管理の最適化
 
 ### Code Organization
-- カスタムフックの抽出 (useApi, useTodos等)
+- カスタムフックの抽出 (useApi等)
 - APIクライアントの抽出
-- コンポーネントの細分化
+- エラーバウンダリの実装
 
 ### Testing
-- React Testing Library
+- React Testing Library導入
 - Vitest (Viteのテストランナー)
+- E2Eテスト (Playwright等)
 
 ## Troubleshooting
 

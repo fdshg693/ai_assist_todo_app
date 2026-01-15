@@ -1,15 +1,11 @@
-import './App.css'
-import { TodoList } from './components/TodoList'
+import { Layout } from './components/Layout'
+import { Dashboard } from './components/Dashboard'
 
 function App() {
   return (
-    <div style={{
-      minHeight: '100vh',
-      backgroundColor: '#f5f5f5',
-      padding: '20px'
-    }}>
-      <TodoList />
-    </div>
+    <Layout>
+      <Dashboard />
+    </Layout>
   )
 }
 

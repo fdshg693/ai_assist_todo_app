@@ -10,6 +10,10 @@
 
 ### Frontend
 - [React + Vite + TypeScript](./react-vite.md) - フロントエンドフレームワークとビルドツール
+- [Zustand](./zustand.md) - 状態管理ライブラリ
+- [Chakra UI v3](./chakra-ui-v3.md) - UIコンポーネントライブラリ
+- [Framer Motion](./framer-motion.md) - アニメーションライブラリ
+- [Lucide React](./lucide-react.md) - アイコンライブラリ
 
 ## 将来実装予定の技術
 
@@ -26,8 +30,6 @@
 - Polly - レジリエンスとトランザクション処理
 
 ### Frontend (Planned)
-- Chakra UI - UIコンポーネントライブラリ
-- Zustand - 状態管理ライブラリ
 - React Query / TanStack Query - サーバーステート管理
 
 ### Infrastructure (Planned)
