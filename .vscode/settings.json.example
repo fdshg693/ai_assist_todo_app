@@ -1,16 +1,17 @@
 {
-    // ===== 改行コード =====
-    "files.eol": "\n", // 新規ファイルはLF
-    "files.autoGuessEncoding": true, // エンコーディング自動検出
-    // ===== WSL統合 =====
-    "terminal.integrated.defaultProfile.windows": "WSL",
-    "terminal.integrated.profiles.windows": {
-        "WSL": {
-            "path": "wsl.exe",
-            "args": [
-                "-d",
-                "Ubuntu"
-            ]
-        }
-    }
+  // ===== 改行コード =====
+  "files.eol": "\n", // 新規ファイルはLF
+  "files.autoGuessEncoding": true, // エンコーディング自動検出
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[csharp]": {
+    "editor.defaultFormatter": "ms-dotnettools.csharp"
+  },
+  // ESLintの実行時カレントディレクトリ。eslint.config.jsの解決基点になる
+  // changeProcessCWDでNode.jsプロセス自体のcwdも変更
+  "eslint.workingDirectories": [
+    { "directory": "frontend", "changeProcessCWD": true }
+  ],
+  // eslintを探すパスを指定
+  "eslint.nodePath": "frontend/node_modules"
 }
